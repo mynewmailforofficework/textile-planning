@@ -1,6 +1,1215 @@
 <!DOCTYPE html>
-<html>
-<body>
-<h1>Hello Textile Planning</h1>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Textile Planning Developed By Shimul - ERP</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <style>
+    body { margin:0; font-family: Arial, sans-serif; background:#f4f6f9; }
+
+    /* HEADER */
+    .topbar {
+      background: linear-gradient(90deg, #0b3d91, #117a65);
+      color: white;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:12px 20px;
+      height:70px;
+      box-shadow:0px 2px 8px rgba(0,0,0,0.2);
+    }
+
+    .brand {
+      cursor:pointer;
+      line-height:1.1;
+      font-size:18px;
+      font-weight:bold;
+    }
+
+    .brand span {
+      display:block;
+      font-size:22px;
+    }
+
+    .pageTitle {
+      font-size:22px;
+      font-weight:bold;
+      text-align:center;
+      flex:1;
+    }
+
+    .topbar-right {
+      width:220px;
+      text-align:right;
+    }
+
+    .topbar-right button {
+      padding:8px 14px;
+      border:none;
+      border-radius:8px;
+      cursor:pointer;
+      background:#dc3545;
+      color:white;
+      font-size:14px;
+    }
+
+    .topbar-right button:hover {
+      background:#b52a37;
+    }
+
+    /* LAYOUT */
+    .container { display:flex; height:calc(100vh - 70px); }
+
+    .sidebar {
+      width:240px;
+      background:#273444;
+      color:white;
+      padding-top:15px;
+      overflow-y:auto;
+    }
+
+    .menu-item {
+      padding:12px 15px;
+      cursor:pointer;
+      border-bottom:1px solid rgba(255,255,255,0.1);
+    }
+    .menu-item:hover { background:#1f2d3d; }
+    .menu-item.active { background:#0f1720; font-weight:bold; }
+
+    .submenu {
+      display:none;
+      background:#1f2d3d;
+    }
+    .submenu div {
+      padding:10px 30px;
+      cursor:pointer;
+      font-size:14px;
+      border-bottom:1px solid rgba(255,255,255,0.08);
+    }
+    .submenu div:hover { background:#0f1720; }
+
+    .content {
+      flex:1;
+      padding:20px;
+      overflow:auto;
+    }
+
+    .card {
+      background:white;
+      padding:15px;
+      border-radius:12px;
+      margin-bottom:15px;
+      box-shadow:0px 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .btn {
+      padding:8px 14px;
+      border:none;
+      border-radius:6px;
+      cursor:pointer;
+      background:#007bff;
+      color:white;
+      font-size:14px;
+    }
+    .btn:hover { background:#0056b3; }
+
+    .btn-danger {
+      background:#dc3545;
+    }
+    .btn-danger:hover {
+      background:#b52a37;
+    }
+
+    table {
+      width:100%;
+      border-collapse:collapse;
+      margin-top:10px;
+      font-size:14px;
+    }
+    th, td {
+      border:1px solid #ddd;
+      padding:8px;
+      text-align:left;
+    }
+
+    th {
+      background:#0b3d91;
+      color:white;
+    }
+
+    input, select {
+      padding:7px;
+      margin:5px;
+      border:1px solid #ccc;
+      border-radius:6px;
+    }
+
+    .flex-row {
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:center;
+    }
+
+    /* POPUP */
+    .popup-overlay {
+      display:none;
+      position:fixed;
+      top:0; left:0;
+      width:100%; height:100%;
+      background:rgba(0,0,0,0.5);
+      justify-content:center;
+      align-items:center;
+      z-index:999;
+    }
+
+    .popup {
+      background:white;
+      width:750px;
+      max-width:95%;
+      padding:20px;
+      border-radius:12px;
+      box-shadow:0px 2px 10px rgba(0,0,0,0.3);
+    }
+
+    .popup h3 { margin-top:0; }
+
+    .close-btn {
+      float:right;
+      cursor:pointer;
+      font-size:18px;
+      font-weight:bold;
+      color:red;
+    }
+
+    /* LOGIN */
+    .login-box {
+      max-width:400px;
+      margin:100px auto;
+      background:white;
+      padding:30px;
+      border-radius:12px;
+      box-shadow:0px 3px 12px rgba(0,0,0,0.2);
+      text-align:center;
+    }
+
+    .login-box h2 {
+      margin-top:0;
+      color:#0b3d91;
+    }
+
+    .login-box input {
+      width:90%;
+      padding:10px;
+      margin:10px 0;
+      font-size:15px;
+    }
+
+    .welcome {
+      font-size:28px;
+      font-weight:bold;
+      color:#0b3d91;
+      text-align:center;
+      margin-top:80px;
+    }
+  </style>
+</head>
+
+<body oncontextmenu="return false;">
+
+<!-- HEADER -->
+<div class="topbar" id="topbar" style="display:none;">
+  <div class="brand" onclick="showDashboard()">
+    <span>Textile Planning</span>
+    Developed By Shimul
+  </div>
+
+  <div class="pageTitle" id="pageTitle">Dashboard</div>
+
+  <div class="topbar-right">
+    <button onclick="logout()">Logout</button>
+  </div>
+</div>
+
+<!-- LOGIN SCREEN -->
+<div id="loginScreen" class="login-box">
+  <h2>Welcome to Planning World!!</h2>
+
+  <input type="text" id="loginUser" placeholder="Username" />
+  <input type="password" id="loginPass" placeholder="Password" />
+
+  <div style="text-align:left;margin-left:18px;">
+    <input type="checkbox" id="showPass" onclick="togglePassword()" />
+    <label for="showPass">Show Password</label>
+  </div>
+
+  <br>
+  <button class="btn" onclick="login()">Login</button>
+  <p id="loginMsg" style="color:red;"></p>
+</div>
+
+<!-- MAIN ERP -->
+<div class="container" id="erpContainer" style="display:none;">
+  <div class="sidebar" id="sidebarMenu"></div>
+  <div class="content" id="mainContent"></div>
+</div>
+
+<!-- Popup -->
+<div class="popup-overlay" id="popupOverlay">
+  <div class="popup">
+    <span class="close-btn" onclick="closePopup()">X</span>
+    <h3>All Department OTT Details</h3>
+    <div id="popupContent"></div>
+  </div>
+</div>
+
+<script>
+/* ---------------- USERS (HARDCODED) ---------------- */
+let USERS = [
+  { username: "admin", password: "1234", role: "admin" },
+  { username: "viewer", password: "1111", role: "viewer" },
+  { username: "shimul", password: "abcd", role: "admin" }
+];
+
+let currentUser = null;
+
+/* ---------------- STORAGE ---------------- */
+let uploadedFiles = JSON.parse(localStorage.getItem("uploadedFiles") || "{}");
+
+function saveStorage() {
+  localStorage.setItem("uploadedFiles", JSON.stringify(uploadedFiles));
+}
+
+/* ---------------- LOGIN HELPERS ---------------- */
+function togglePassword() {
+  let passInput = document.getElementById("loginPass");
+  passInput.type = (passInput.type === "password") ? "text" : "password";
+}
+
+/* ---------------- LOGIN LOGOUT ---------------- */
+function login() {
+  let u = document.getElementById("loginUser").value.trim();
+  let p = document.getElementById("loginPass").value.trim();
+
+  let user = USERS.find(x => x.username === u && x.password === p);
+
+  if(!user) {
+    document.getElementById("loginMsg").innerText = "Invalid Username or Password!";
+    return;
+  }
+
+  currentUser = user;
+
+  document.getElementById("loginScreen").style.display = "none";
+  document.getElementById("topbar").style.display = "flex";
+  document.getElementById("erpContainer").style.display = "flex";
+
+  document.getElementById("loginMsg").innerText = "";
+
+  loadSidebar();
+  showDashboard();
+}
+
+function logout() {
+  currentUser = null;
+
+  document.getElementById("loginUser").value = "";
+  document.getElementById("loginPass").value = "";
+  document.getElementById("loginMsg").innerText = "";
+
+  document.getElementById("loginScreen").style.display = "block";
+  document.getElementById("topbar").style.display = "none";
+  document.getElementById("erpContainer").style.display = "none";
+}
+
+/* ---------------- DASHBOARD ---------------- */
+function showDashboard() {
+  setPageTitle("Dashboard");
+  document.getElementById("mainContent").innerHTML = `
+    <div class="welcome">Welcome to Our Planning Dashboard</div>
+  `;
+}
+
+/* ---------------- TOP TITLE ---------------- */
+function setPageTitle(title) {
+  document.getElementById("pageTitle").innerText = title;
+}
+
+/* ---------------- SIDEBAR ---------------- */
+function loadSidebar() {
+  let sidebar = document.getElementById("sidebarMenu");
+  sidebar.innerHTML = "";
+
+  if(currentUser.role === "admin") {
+    sidebar.innerHTML += `<div class="menu-item" onclick="showPage('dataManagement')">Data Management</div>`;
+
+    sidebar.innerHTML += `
+      <div class="menu-item" onclick="toggleSubmenu('ottMgmtMenu')">OTT Management</div>
+      <div id="ottMgmtMenu" class="submenu">
+        <div onclick="showOTTPage('knitting')">Knitting OTT</div>
+        <div onclick="showOTTPage('dyeing')">Dyeing OTT</div>
+        <div onclick="showOTTPage('delivery')">Delivery OTT</div>
+      </div>
+    `;
+
+    sidebar.innerHTML += `
+      <div class="menu-item" onclick="toggleSubmenu('ottSummaryMenu')">OTT Summary</div>
+      <div id="ottSummaryMenu" class="submenu">
+        <div onclick="showSummaryPage('knitting')">Knitting</div>
+        <div onclick="showSummaryPage('dyeing')">Dyeing</div>
+        <div onclick="showSummaryPage('delivery')">Delivery</div>
+      </div>
+    `;
+
+    sidebar.innerHTML += `<div class="menu-item" onclick="showPage('userManagement')">User Management</div>`;
+  }
+
+  if(currentUser.role === "viewer") {
+    sidebar.innerHTML += `
+      <div class="menu-item" onclick="toggleSubmenu('ottMgmtMenu')">OTT Management</div>
+      <div id="ottMgmtMenu" class="submenu">
+        <div onclick="showOTTPage('knitting')">Knitting OTT</div>
+        <div onclick="showOTTPage('dyeing')">Dyeing OTT</div>
+        <div onclick="showOTTPage('delivery')">Delivery OTT</div>
+      </div>
+    `;
+
+    sidebar.innerHTML += `
+      <div class="menu-item" onclick="toggleSubmenu('ottSummaryMenu')">OTT Summary</div>
+      <div id="ottSummaryMenu" class="submenu">
+        <div onclick="showSummaryPage('knitting')">Knitting</div>
+        <div onclick="showSummaryPage('dyeing')">Dyeing</div>
+        <div onclick="showSummaryPage('delivery')">Delivery</div>
+      </div>
+    `;
+  }
+}
+
+function toggleSubmenu(id) {
+  let menu = document.getElementById(id);
+  menu.style.display = (menu.style.display === "block") ? "none" : "block";
+}
+
+/* ---------------- HELPER FUNCTIONS ---------------- */
+function excelDateToJSDate(value) {
+  if (value === null || value === undefined || value === "") return "";
+  if (value instanceof Date) return value;
+
+  if (typeof value === "number") {
+    let utc_days = Math.floor(value - 25569);
+    let utc_value = utc_days * 86400;
+    return new Date(utc_value * 1000);
+  }
+
+  let d = new Date(value);
+  if (!isNaN(d)) return d;
+  return value;
+}
+
+function formatDate(dateVal) {
+  if (!dateVal) return "";
+  let d = excelDateToJSDate(dateVal);
+  if (!(d instanceof Date) || isNaN(d)) return dateVal;
+
+  return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+}
+
+function monthNameFromDate(dateVal) {
+  if (!dateVal) return "";
+  let d = excelDateToJSDate(dateVal);
+  if (!(d instanceof Date) || isNaN(d)) return "";
+  return d.toLocaleString("en-US", { month: "short" });
+}
+
+function compareDates(plan, actual) {
+  if (!plan || !actual) return "Fail";
+
+  let p = excelDateToJSDate(plan);
+  let a = excelDateToJSDate(actual);
+
+  if (!(p instanceof Date) || isNaN(p)) return "Fail";
+  if (!(a instanceof Date) || isNaN(a)) return "Fail";
+
+  return (a <= p) ? "Pass" : "Fail";
+}
+
+function findCol(row, keywords) {
+  if (!row) return null;
+  let keys = Object.keys(row);
+
+  for (let k of keys) {
+    for (let word of keywords) {
+      if (k.toLowerCase().includes(word.toLowerCase())) return k;
+    }
+  }
+  return null;
+}
+
+/* ---------------- PAGE ROUTER ---------------- */
+function showPage(page) {
+  if(page === "dataManagement") {
+    setPageTitle("Data Management");
+    renderDataManagement();
+  }
+
+  if(page === "userManagement") {
+    setPageTitle("User Management");
+    renderUserManagement();
+  }
+}
+
+/* ---------------- DATA MANAGEMENT ---------------- */
+function uploadExcel(fileCategory, fileInputId) {
+  let fileInput = document.getElementById(fileInputId);
+  let file = fileInput.files[0];
+
+  if(!file) {
+    alert("Please select a file first!");
+    return;
+  }
+
+  let reader = new FileReader();
+  reader.onload = function(e) {
+    let data = new Uint8Array(e.target.result);
+    let workbook = XLSX.read(data, {type: "array"});
+    let sheetName = workbook.SheetNames[0];
+    let worksheet = workbook.Sheets[sheetName];
+
+    let jsonData = XLSX.utils.sheet_to_json(worksheet, {defval:""});
+
+    uploadedFiles[fileCategory] = {
+      name: file.name,
+      uploadedBy: currentUser.username,
+      dateTime: new Date().toLocaleString(),
+      data: jsonData
+    };
+
+    saveStorage();
+    alert(fileCategory + " uploaded successfully! Previous file replaced.");
+    renderDataManagement();
+  };
+
+  reader.readAsArrayBuffer(file);
+}
+
+function deleteFile(fileCategory) {
+  if(confirm("Are you sure to delete " + fileCategory + " file?")) {
+    delete uploadedFiles[fileCategory];
+    saveStorage();
+    renderDataManagement();
+  }
+}
+
+function renderDataManagement() {
+  if(currentUser.role !== "admin") {
+    alert("Access denied!");
+    showDashboard();
+    return;
+  }
+
+  let html = `
+    <div class="card">
+      <h2>Upload Source Data</h2>
+      <div class="flex-row">
+        <div>
+          <b>Knitting1</b><br>
+          <input type="file" id="knitting1File" />
+          <button class="btn" onclick="uploadExcel('Knitting1','knitting1File')">Upload</button>
+        </div>
+
+        <div>
+          <b>Knitting2</b><br>
+          <input type="file" id="knitting2File" />
+          <button class="btn" onclick="uploadExcel('Knitting2','knitting2File')">Upload</button>
+        </div>
+
+        <div>
+          <b>Dyeing1</b><br>
+          <input type="file" id="dyeing1File" />
+          <button class="btn" onclick="uploadExcel('Dyeing1','dyeing1File')">Upload</button>
+        </div>
+
+        <div>
+          <b>Dyeing2</b><br>
+          <input type="file" id="dyeing2File" />
+          <button class="btn" onclick="uploadExcel('Dyeing2','dyeing2File')">Upload</button>
+        </div>
+
+        <div>
+          <b>Delivery1</b><br>
+          <input type="file" id="delivery1File" />
+          <button class="btn" onclick="uploadExcel('Delivery1','delivery1File')">Upload</button>
+        </div>
+
+        <div>
+          <b>Delivery2</b><br>
+          <input type="file" id="delivery2File" />
+          <button class="btn" onclick="uploadExcel('Delivery2','delivery2File')">Upload</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Uploaded Files Directory</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>File Category</th>
+            <th>File Name</th>
+            <th>Uploaded By</th>
+            <th>Date & Time</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
+
+  let categories = ["Knitting1","Knitting2","Dyeing1","Dyeing2","Delivery1","Delivery2"];
+  categories.forEach(cat => {
+    if(uploadedFiles[cat]) {
+      html += `
+        <tr>
+          <td>${cat.replace(/[0-9]/g,"")}</td>
+          <td>${uploadedFiles[cat].name}</td>
+          <td>${uploadedFiles[cat].uploadedBy}</td>
+          <td>${uploadedFiles[cat].dateTime}</td>
+          <td><button class="btn btn-danger" onclick="deleteFile('${cat}')">Delete</button></td>
+        </tr>
+      `;
+    }
+  });
+
+  html += `
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  document.getElementById("mainContent").innerHTML = html;
+}
+
+/* ---------------- OTT MANAGEMENT ---------------- */
+let ottState = {
+  currentPage: 1,
+  pageSize: 10,
+  search: "",
+  floor: "",
+  startMonth: "",
+  endMonth: "",
+  passFail: ""
+};
+
+function mergeByBooking(planData, actualData) {
+  if (planData.length === 0) return [];
+
+  let bookingColPlan = findCol(planData[0], ["booking"]);
+  let bookingColActual = actualData.length > 0 ? findCol(actualData[0], ["booking"]) : null;
+
+  let actualMap = {};
+  actualData.forEach(r => {
+    let b = bookingColActual ? r[bookingColActual] : "";
+    if (b !== undefined && b !== null && b !== "") {
+      actualMap[b.toString().trim()] = r;
+    }
+  });
+
+  let merged = planData.map(planRow => {
+    let booking = planRow[bookingColPlan];
+    let key = booking ? booking.toString().trim() : "";
+    let actRow = actualMap[key];
+
+    return { plan: planRow, actual: actRow || {} };
+  });
+
+  return merged;
+}
+
+function getMergedData(type) {
+  let plan = uploadedFiles[type + "1"] ? uploadedFiles[type + "1"].data : [];
+  let actual = uploadedFiles[type + "2"] ? uploadedFiles[type + "2"].data : [];
+  return mergeByBooking(plan, actual);
+}
+
+function showOTTPage(type) {
+  type = type.charAt(0).toUpperCase() + type.slice(1);
+  setPageTitle(type + " OTT Management");
+  ottState.currentPage = 1;
+  renderOTTManagement(type);
+}
+
+function applyOTTFilters(data, cols) {
+  return data.filter(obj => {
+    let row = obj.plan;
+    let actualRow = obj.actual;
+
+    let booking = (row[cols.bookingCol] || "").toString().toLowerCase();
+    let buyer = (row[cols.buyerCol] || "").toString().toLowerCase();
+    let pmc = (row[cols.pmcCol] || "").toString().toLowerCase();
+    let floor = (row[cols.floorCol] || "").toString();
+
+    let planStart = row[cols.planStartCol] || "";
+    let planEnd = row[cols.planEndCol] || "";
+
+    let actualStart = cols.actualStartCol ? (actualRow[cols.actualStartCol] || "") : "";
+    let actualEnd = cols.actualEndCol ? (actualRow[cols.actualEndCol] || "") : "";
+
+    let startOTT = compareDates(planStart, actualStart);
+    let endOTT = compareDates(planEnd, actualEnd);
+
+    let searchText = ottState.search.toLowerCase();
+
+    let matchesSearch =
+      searchText === "" ||
+      booking.includes(searchText) ||
+      buyer.includes(searchText) ||
+      pmc.includes(searchText);
+
+    let matchesFloor = ottState.floor === "" || floor === ottState.floor;
+
+    let startMonth = monthNameFromDate(planStart);
+    let endMonth = monthNameFromDate(planEnd);
+
+    let matchesStartMonth =
+      ottState.startMonth === "" ||
+      startMonth.toLowerCase() === ottState.startMonth.toLowerCase();
+
+    let matchesEndMonth =
+      ottState.endMonth === "" ||
+      endMonth.toLowerCase() === ottState.endMonth.toLowerCase();
+
+    let matchesPass =
+      ottState.passFail === "" ||
+      startOTT === ottState.passFail ||
+      endOTT === ottState.passFail;
+
+    return matchesSearch && matchesFloor && matchesStartMonth && matchesEndMonth && matchesPass;
+  });
+}
+
+function renderOTTManagement(moduleType) {
+  let title = moduleType + " OTT Details Status";
+  let merged = getMergedData(moduleType);
+
+  if (merged.length === 0) {
+    document.getElementById("mainContent").innerHTML = `
+      <div class="card">
+        <h2>${title}</h2>
+        <p style="color:red;"><b>No data uploaded for ${moduleType}1 / ${moduleType}2.</b></p>
+      </div>
+    `;
+    return;
+  }
+
+  let planRow = merged[0].plan;
+  let actualRowExample = merged[0].actual;
+
+  let cols = {
+    bookingCol: findCol(planRow, ["booking"]),
+    buyerCol: findCol(planRow, ["buyer"]),
+    pmcCol: findCol(planRow, ["pmc"]),
+    floorCol: findCol(planRow, ["floor"]),
+    planStartCol: findCol(planRow, [moduleType + " start", "start"]),
+    planEndCol: findCol(planRow, [moduleType + " end", "end"]),
+    actualStartCol: findCol(actualRowExample, ["actual", "start"]),
+    actualEndCol: findCol(actualRowExample, ["actual", "end"])
+  };
+
+  let filteredData = applyOTTFilters(merged, cols);
+
+  let totalRows = filteredData.length;
+  let totalPages = Math.ceil(totalRows / ottState.pageSize);
+  if (totalPages === 0) totalPages = 1;
+
+  if (ottState.currentPage > totalPages) ottState.currentPage = totalPages;
+  if (ottState.currentPage < 1) ottState.currentPage = 1;
+
+  let startIndex = (ottState.currentPage - 1) * ottState.pageSize;
+  let endIndex = startIndex + ottState.pageSize;
+  let pageData = filteredData.slice(startIndex, endIndex);
+
+  let floorSet = new Set();
+  let startMonthSet = new Set();
+  let endMonthSet = new Set();
+
+  merged.forEach(obj => {
+    let r = obj.plan;
+
+    let fl = r[cols.floorCol];
+    if (fl) floorSet.add(fl.toString());
+
+    let sm = monthNameFromDate(r[cols.planStartCol]);
+    if (sm) startMonthSet.add(sm);
+
+    let em = monthNameFromDate(r[cols.planEndCol]);
+    if (em) endMonthSet.add(em);
+  });
+
+  let html = `
+    <div class="card">
+      <h2>${title}</h2>
+
+      <div class="flex-row">
+        <input type="text" id="searchText" value="${ottState.search}" placeholder="Search Booking No, Buyer, PMC..." />
+
+        <select id="floorFilter">
+          <option value="">Select Floor</option>
+        </select>
+
+        <select id="startMonthFilter">
+          <option value="">Select Start Month</option>
+        </select>
+
+        <select id="endMonthFilter">
+          <option value="">Select End Month</option>
+        </select>
+
+        <select id="passFilter">
+          <option value="">Select Pass/Fail</option>
+          <option value="Pass">Pass</option>
+          <option value="Fail">Fail</option>
+        </select>
+
+        <button class="btn" onclick="applyOTTFilterButton('${moduleType}')">Apply</button>
+        <button class="btn btn-danger" onclick="resetOTTFilters('${moduleType}')">Reset</button>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>View</th>
+            <th>Booking No.</th>
+            <th>Buyer</th>
+            <th>PMC</th>
+            <th>Floor</th>
+            <th>${moduleType} Start</th>
+            <th>${moduleType} End</th>
+            <th>Actual Start</th>
+            <th>Actual End</th>
+            <th>Start OTT</th>
+            <th>End OTT</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
+
+  pageData.forEach(obj => {
+    let row = obj.plan;
+    let actualRow = obj.actual;
+
+    let booking = row[cols.bookingCol] || "";
+    let buyer = row[cols.buyerCol] || "";
+    let pmc = row[cols.pmcCol] || "";
+    let floor = row[cols.floorCol] || "";
+
+    let planStart = row[cols.planStartCol] || "";
+    let planEnd = row[cols.planEndCol] || "";
+
+    let actualStart = cols.actualStartCol ? (actualRow[cols.actualStartCol] || "") : "";
+    let actualEnd = cols.actualEndCol ? (actualRow[cols.actualEndCol] || "") : "";
+
+    let startOTT = compareDates(planStart, actualStart);
+    let endOTT = compareDates(planEnd, actualEnd);
+
+    html += `
+      <tr>
+        <td><button class="btn" onclick="openPopup('${booking}')">View</button></td>
+        <td>${booking}</td>
+        <td>${buyer}</td>
+        <td>${pmc}</td>
+        <td>${floor}</td>
+        <td>${formatDate(planStart)}</td>
+        <td>${formatDate(planEnd)}</td>
+        <td>${formatDate(actualStart)}</td>
+        <td>${formatDate(actualEnd)}</td>
+        <td>${startOTT}</td>
+        <td>${endOTT}</td>
+      </tr>
+    `;
+  });
+
+  if(pageData.length === 0) {
+    html += `<tr><td colspan="11" style="text-align:center;color:red;"><b>No matching data found</b></td></tr>`;
+  }
+
+  html += `
+        </tbody>
+      </table>
+
+      <div style="margin-top:15px;display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          Showing ${totalRows === 0 ? 0 : startIndex + 1}-${Math.min(endIndex, totalRows)} of ${totalRows}
+        </div>
+        <div>
+          <button class="btn" onclick="changeOTTPage(-1,'${moduleType}')" ${ottState.currentPage==1?"disabled":""}>Prev</button>
+          <span style="margin:0 10px;">Page ${ottState.currentPage} / ${totalPages}</span>
+          <button class="btn" onclick="changeOTTPage(1,'${moduleType}')" ${ottState.currentPage==totalPages?"disabled":""}>Next</button>
+        </div>
+      </div>
+
+    </div>
+  `;
+
+  document.getElementById("mainContent").innerHTML = html;
+
+  let floorSelect = document.getElementById("floorFilter");
+  floorSet.forEach(f => {
+    floorSelect.innerHTML += `<option value="${f}" ${ottState.floor===f?"selected":""}>${f}</option>`;
+  });
+
+  let startMonthSelect = document.getElementById("startMonthFilter");
+  startMonthSet.forEach(m => {
+    startMonthSelect.innerHTML += `<option value="${m}" ${ottState.startMonth===m?"selected":""}>${m}</option>`;
+  });
+
+  let endMonthSelect = document.getElementById("endMonthFilter");
+  endMonthSet.forEach(m => {
+    endMonthSelect.innerHTML += `<option value="${m}" ${ottState.endMonth===m?"selected":""}>${m}</option>`;
+  });
+
+  document.getElementById("passFilter").value = ottState.passFail;
+}
+
+function applyOTTFilterButton(moduleType) {
+  ottState.search = document.getElementById("searchText").value || "";
+  ottState.floor = document.getElementById("floorFilter").value || "";
+  ottState.startMonth = document.getElementById("startMonthFilter").value || "";
+  ottState.endMonth = document.getElementById("endMonthFilter").value || "";
+  ottState.passFail = document.getElementById("passFilter").value || "";
+  ottState.currentPage = 1;
+  renderOTTManagement(moduleType);
+}
+
+function resetOTTFilters(moduleType) {
+  ottState.search = "";
+  ottState.floor = "";
+  ottState.startMonth = "";
+  ottState.endMonth = "";
+  ottState.passFail = "";
+  ottState.currentPage = 1;
+  renderOTTManagement(moduleType);
+}
+
+function changeOTTPage(step, moduleType) {
+  ottState.currentPage += step;
+  if(ottState.currentPage < 1) ottState.currentPage = 1;
+  renderOTTManagement(moduleType);
+}
+
+/* ---------------- POPUP ---------------- */
+function openPopup(bookingNo) {
+  bookingNo = bookingNo.toString().trim();
+
+  let knittingMerged = getMergedData("Knitting");
+  let dyeingMerged = getMergedData("Dyeing");
+  let deliveryMerged = getMergedData("Delivery");
+
+  function findMergedRow(mergedData) {
+    if (!mergedData || mergedData.length === 0) return null;
+    let bookingCol = findCol(mergedData[0].plan, ["booking"]);
+
+    return mergedData.find(obj => {
+      let b = obj.plan[bookingCol];
+      return b && b.toString().trim() === bookingNo;
+    });
+  }
+
+  let kObj = findMergedRow(knittingMerged);
+  let dObj = findMergedRow(dyeingMerged);
+  let delObj = findMergedRow(deliveryMerged);
+
+  function makeRow(label, obj, moduleName) {
+    if (!obj) {
+      return `<tr><td>${label}</td><td colspan="6" style="color:red;"><b>No Data Found</b></td></tr>`;
+    }
+
+    let planRow = obj.plan;
+    let actualRow = obj.actual;
+
+    let planStartCol = findCol(planRow, [moduleName + " start", "start"]);
+    let planEndCol = findCol(planRow, [moduleName + " end", "end"]);
+
+    let actualStartCol = findCol(actualRow, ["actual", "start"]);
+    let actualEndCol = findCol(actualRow, ["actual", "end"]);
+
+    let planStart = planRow[planStartCol] || "";
+    let planEnd = planRow[planEndCol] || "";
+
+    let actualStart = actualStartCol ? (actualRow[actualStartCol] || "") : "";
+    let actualEnd = actualEndCol ? (actualRow[actualEndCol] || "") : "";
+
+    return `
+      <tr>
+        <td>${label}</td>
+        <td>${formatDate(planStart)}</td>
+        <td>${formatDate(planEnd)}</td>
+        <td>${formatDate(actualStart)}</td>
+        <td>${formatDate(actualEnd)}</td>
+        <td>${compareDates(planStart, actualStart)}</td>
+        <td>${compareDates(planEnd, actualEnd)}</td>
+      </tr>
+    `;
+  }
+
+  let html = `
+    <h4>Booking No: <b>${bookingNo}</b></h4>
+    <table>
+      <thead>
+        <tr>
+          <th>Section</th>
+          <th>Plan Start</th>
+          <th>Plan End</th>
+          <th>Actual Start</th>
+          <th>Actual End</th>
+          <th>Start OTT</th>
+          <th>End OTT</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${makeRow("Knitting", kObj, "Knitting")}
+        ${makeRow("Dyeing", dObj, "Dyeing")}
+        ${makeRow("Delivery", delObj, "Delivery")}
+      </tbody>
+    </table>
+  `;
+
+  document.getElementById("popupContent").innerHTML = html;
+  document.getElementById("popupOverlay").style.display = "flex";
+}
+
+function closePopup() {
+  document.getElementById("popupOverlay").style.display = "none";
+}
+
+/* ---------------- OTT SUMMARY ---------------- */
+function showSummaryPage(type) {
+  type = type.charAt(0).toUpperCase() + type.slice(1);
+  setPageTitle(type + " OTT Summary");
+  renderBuyerSummary(type);
+}
+
+function renderBuyerSummary(type) {
+  let title = "Buyer Wise " + type + " OTT Status";
+
+  let merged = getMergedData(type);
+
+  if (merged.length === 0) {
+    document.getElementById("mainContent").innerHTML = `
+      <div class="card">
+        <h2>${title}</h2>
+        <p style="color:red;"><b>No data uploaded for ${type}1 / ${type}2.</b></p>
+      </div>
+    `;
+    return;
+  }
+
+  let planRow = merged[0].plan;
+  let actualRow = merged[0].actual;
+
+  let buyerCol = findCol(planRow, ["buyer"]);
+  let planStartCol = findCol(planRow, ["start"]);
+  let planEndCol = findCol(planRow, ["end"]);
+
+  let actualStartCol = findCol(actualRow, ["actual", "start"]);
+  let actualEndCol = findCol(actualRow, ["actual", "end"]);
+
+  let monthSet = new Set();
+  merged.forEach(obj => {
+    let sm = monthNameFromDate(obj.plan[planStartCol]);
+    let em = monthNameFromDate(obj.plan[planEndCol]);
+    if (sm) monthSet.add(sm);
+    if (em) monthSet.add(em);
+  });
+
+  let selectedMonth = document.getElementById("summaryMonthFilter")
+    ? document.getElementById("summaryMonthFilter").value
+    : "";
+
+  let buyerMap = {};
+
+  merged.forEach(obj => {
+    let plan = obj.plan;
+    let actual = obj.actual;
+
+    let buyer = plan[buyerCol] || "Unknown";
+
+    let planStart = plan[planStartCol] || "";
+    let planEnd = plan[planEndCol] || "";
+
+    let actualStart = actualStartCol ? (actual[actualStartCol] || "") : "";
+    let actualEnd = actualEndCol ? (actual[actualEndCol] || "") : "";
+
+    let startMonth = monthNameFromDate(planStart);
+    let endMonth = monthNameFromDate(planEnd);
+
+    if (!buyerMap[buyer]) {
+      buyerMap[buyer] = {
+        startTotal: 0, startPass: 0,
+        endTotal: 0, endPass: 0
+      };
+    }
+
+    // Start OTT Month Filter
+    if (!selectedMonth || startMonth.toLowerCase() === selectedMonth.toLowerCase()) {
+      buyerMap[buyer].startTotal++;
+      if (compareDates(planStart, actualStart) === "Pass") buyerMap[buyer].startPass++;
+    }
+
+    // End OTT Month Filter
+    if (!selectedMonth || endMonth.toLowerCase() === selectedMonth.toLowerCase()) {
+      buyerMap[buyer].endTotal++;
+      if (compareDates(planEnd, actualEnd) === "Pass") buyerMap[buyer].endPass++;
+    }
+  });
+
+  let html = `
+    <div class="card">
+      <h2>${title}</h2>
+
+      <div class="flex-row">
+        <select id="summaryMonthFilter" onchange="renderBuyerSummary('${type}')">
+          <option value="">Select Month</option>
+        </select>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th rowspan="2">Buyer</th>
+            <th colspan="3">Start OTT</th>
+            <th colspan="3">End OTT</th>
+            <th colspan="3">Overall OTT</th>
+          </tr>
+          <tr>
+            <th>No of Booking</th><th>OTT Pass</th><th>Pass %</th>
+            <th>No of Booking</th><th>OTT Pass</th><th>Pass %</th>
+            <th>No of Booking</th><th>OTT Pass</th><th>Pass %</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
+
+  let allStartTotal = 0, allStartPass = 0;
+  let allEndTotal = 0, allEndPass = 0;
+
+  Object.keys(buyerMap).sort().forEach(buyer => {
+    let b = buyerMap[buyer];
+
+    let overallTotal = b.startTotal + b.endTotal;
+    let overallPass = b.startPass + b.endPass;
+
+    let startPercent = b.startTotal ? ((b.startPass / b.startTotal) * 100).toFixed(0) + "%" : "0%";
+    let endPercent = b.endTotal ? ((b.endPass / b.endTotal) * 100).toFixed(0) + "%" : "0%";
+    let overallPercent = overallTotal ? ((overallPass / overallTotal) * 100).toFixed(0) + "%" : "0%";
+
+    allStartTotal += b.startTotal;
+    allStartPass += b.startPass;
+    allEndTotal += b.endTotal;
+    allEndPass += b.endPass;
+
+    html += `
+      <tr>
+        <td>${buyer}</td>
+
+        <td>${b.startTotal}</td>
+        <td>${b.startPass}</td>
+        <td>${startPercent}</td>
+
+        <td>${b.endTotal}</td>
+        <td>${b.endPass}</td>
+        <td>${endPercent}</td>
+
+        <td>${overallTotal}</td>
+        <td>${overallPass}</td>
+        <td>${overallPercent}</td>
+      </tr>
+    `;
+  });
+
+  let allOverallTotal = allStartTotal + allEndTotal;
+  let allOverallPass = allStartPass + allEndPass;
+
+  let allStartPercent = allStartTotal ? ((allStartPass / allStartTotal) * 100).toFixed(0) + "%" : "0%";
+  let allEndPercent = allEndTotal ? ((allEndPass / allEndTotal) * 100).toFixed(0) + "%" : "0%";
+  let allOverallPercent = allOverallTotal ? ((allOverallPass / allOverallTotal) * 100).toFixed(0) + "%" : "0%";
+
+  html += `
+    <tr style="font-weight:bold;background:#f0f0f0;">
+      <td>All Buyer</td>
+
+      <td>${allStartTotal}</td>
+      <td>${allStartPass}</td>
+      <td>${allStartPercent}</td>
+
+      <td>${allEndTotal}</td>
+      <td>${allEndPass}</td>
+      <td>${allEndPercent}</td>
+
+      <td>${allOverallTotal}</td>
+      <td>${allOverallPass}</td>
+      <td>${allOverallPercent}</td>
+    </tr>
+  `;
+
+  html += `
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  document.getElementById("mainContent").innerHTML = html;
+
+  let monthSelect = document.getElementById("summaryMonthFilter");
+  monthSet.forEach(m => {
+    monthSelect.innerHTML += `<option value="${m}" ${m === selectedMonth ? "selected" : ""}>${m}</option>`;
+  });
+}
+
+/* ---------------- USER MANAGEMENT ---------------- */
+function renderUserManagement() {
+  if(currentUser.role !== "admin") {
+    alert("Access denied!");
+    showDashboard();
+    return;
+  }
+
+  let html = `
+    <div class="card">
+      <h2>User Management</h2>
+      <p><b>Note:</b> Users are hardcoded inside code.</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Username</th>
+            <th>Password</th>
+            <th>Role</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
+
+  USERS.forEach(u => {
+    html += `
+      <tr>
+        <td>${u.username}</td>
+        <td>${u.password}</td>
+        <td>${u.role}</td>
+      </tr>
+    `;
+  });
+
+  html += `
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  document.getElementById("mainContent").innerHTML = html;
+}
+</script>
+
 </body>
 </html>
